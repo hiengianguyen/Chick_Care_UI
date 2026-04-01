@@ -8,6 +8,7 @@ import AlertsWidget from "./components/AlertsWidget";
 import ActivityLog from "./components/ActivityLog";
 import ListStatCard from "./components/ListStatCard";
 import axios from "axios";
+import AutoFeed from "./components/AutoFeed";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -52,6 +53,8 @@ const App = () => {
             <CameraSection />
 
             <IotDevices devices={iotDevices} onToggle={handleToggleDevice} />
+
+            <AutoFeed />
           </div>
 
           <div className="xl:col-span-4 space-y-6">
