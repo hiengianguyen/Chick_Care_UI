@@ -120,9 +120,6 @@ const Features = () => {
           <button className="p-2 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-500">
             <Bell size={20} />
           </button>
-          <button className="p-2 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-500">
-            <Power size={20} />
-          </button>
         </div>
       </header>
       <div>
@@ -134,9 +131,7 @@ const Features = () => {
           <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div
-                  className={`p-4 rounded-2xl ${fanConfig.active ? "bg-blue-500 text-white animate-spin-slow" : "bg-slate-100 text-slate-400"}`}
-                >
+                <div className={`p-4 rounded-2xl ${fanConfig.active ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-400"}`}>
                   <Wind size={24} />
                 </div>
                 <div>
@@ -282,7 +277,7 @@ const Features = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={`p-4 rounded-2xl ${mistConfig.active ? "bg-cyan-500 text-white" : "bg-slate-100 text-slate-400"}`}>
-                  <Droplets size={24} className={mistConfig.active ? "animate-bounce" : ""} />
+                  <Droplets size={24} />
                 </div>
                 <div>
                   <h2 className="font-black text-slate-800 uppercase text-sm">Hệ thống Phun Sương</h2>
@@ -314,7 +309,7 @@ const Features = () => {
                       max="45"
                       value={mistConfig.thresholdTemp}
                       onChange={(e) => setMistConfig({ ...mistConfig, thresholdTemp: e.target.value })}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer accent-cyan-500"
+                      className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer"
                     />
                   </div>
                   <div className="space-y-2">
@@ -328,7 +323,7 @@ const Features = () => {
                       max="80"
                       value={mistConfig.thresholdHumid}
                       onChange={(e) => setMistConfig({ ...mistConfig, thresholdHumid: e.target.value })}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer accent-cyan-500"
+                      className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer"
                     />
                   </div>
                 </div>
