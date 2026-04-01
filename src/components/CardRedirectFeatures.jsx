@@ -2,7 +2,7 @@ import { Droplets, MousePointer2, Sun, UtensilsCrossed, Wind, Activity } from "l
 import { useNavigate } from "react-router-dom";
 
 function CardRedirectFeatures() {
-  navigator("/features");
+  const navigator = useNavigate();
   const devices = [
     { id: "fan", type: "fan", name: "Hệ thống Quạt", status: "Đang chạy: 60%", icon: Wind, color: "bg-blue-500" },
     { id: "heater", type: "heater", name: "Đèn Sưởi Ấm", status: "Đang chạy: Auto", icon: Sun, color: "bg-orange-500" },
