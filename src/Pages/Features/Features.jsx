@@ -29,7 +29,7 @@ const Features = () => {
 
   // 1. Quạt (Fan)
   const [fanConfig, setFanConfig] = useState({
-    active: true,
+    active: false,
     thresholdTemp: 30,
     power: 80,
     mode: "Tự động", // 'Tự động' hoặc 'Hẹn giờ'
@@ -40,7 +40,7 @@ const Features = () => {
 
   // 2. Đèn Sưởi (Heater)
   const [lightConfig, setLightConfig] = useState({
-    active: true,
+    active: false,
     times: ["18:00"],
     power: 80,
     selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
@@ -49,7 +49,7 @@ const Features = () => {
 
   // 3. Cho ăn (Feeder)
   const [feederConfig, setFeederConfig] = useState({
-    active: true,
+    active: false,
     amount: "Vừa",
     times: ["07:00", "16:30"],
     selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],

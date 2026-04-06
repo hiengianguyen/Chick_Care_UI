@@ -4,7 +4,7 @@ import { Activity, Users, EyeOff, Maximize } from "lucide-react";
 import { GlobalContext } from "./GlobalContext";
 
 const stats = [
-  { title: "Tổng đàn gà", value: "0", unit: "con", icon: Users, color: "bg-blue-500", trend: 12 },
+  { title: "Tổng số gà", value: "0", unit: "con", icon: Users, color: "bg-blue-500", trend: 12 },
   {
     title: "Mật độ cao nhất",
     value: "0",
