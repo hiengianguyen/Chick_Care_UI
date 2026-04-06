@@ -16,59 +16,59 @@ const CameraSection = () => {
   const [showResult, setShowResult] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  useEffect(() => {
-    // Khi component mount, yêu cầu backend bật stream 1 lần
-    const startStream = async () => {
-      try {
-        await axios.post(`${API_BASE}/api/start-stream`);
-        setStreamActive(true);
-        setError(null);
-      } catch (err) {
-        setError(err.response?.data?.error || err.message || "Không thể bật stream từ server");
-        setStreamActive(false);
-      }
-    };
+  // useEffect(() => {
+  // Khi component mount, yêu cầu backend bật stream 1 lần
+  // const startStream = async () => {
+  //   try {
+  //     await axios.post(`${API_BASE}/api/start-stream`);
+  //     setStreamActive(true);
+  //     setError(null);
+  //   } catch (err) {
+  //     setError(err.response?.data?.error || err.message || "Không thể bật stream từ server");
+  //     setStreamActive(false);
+  //   }
+  // };
 
-    startStream();
-  }, []);
+  //   startStream();
+  // }, []);
 
-  useEffect(() => {
-    if (!streamActive) return;
+  // useEffect(() => {
+  //   if (!streamActive) return;
 
-    let cancelled = false;
+  //   let cancelled = false;
 
-    const refresh = async () => {
-      setLoading(true);
-      try {
-        // Cập nhật URL ảnh để tránh cache
-        setAnnotatedImageUrl(`${API_BASE}/api/stream-frame?t=${Date.now()}`);
+  //   const refresh = async () => {
+  //     setLoading(true);
+  //     try {
+  //       // Cập nhật URL ảnh để tránh cache
+  //       setAnnotatedImageUrl(`${API_BASE}/api/stream-frame?t=${Date.now()}`);
 
-        const { data } = await axios.get(`${API_BASE}/api/latest-data`);
-        if (!cancelled) {
-          setData(data);
-          setLastResult(data);
-          setError(null);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.response?.data?.error || err.message || "Lỗi lấy dữ liệu từ API");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
+  //       const { data } = await axios.get(`${API_BASE}/api/latest-data`);
+  //       if (!cancelled) {
+  //         setData(data);
+  //         setLastResult(data);
+  //         setError(null);
+  //       }
+  //     } catch (err) {
+  //       if (!cancelled) {
+  //         setError(err.response?.data?.error || err.message || "Lỗi lấy dữ liệu từ API");
+  //       }
+  //     } finally {
+  //       if (!cancelled) {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   };
 
-    // Gọi ngay lần đầu
-    refresh();
-    const interval = setInterval(refresh, REFRESH_INTERVAL_MS);
+  //   // Gọi ngay lần đầu
+  //   refresh();
+  //   const interval = setInterval(refresh, REFRESH_INTERVAL_MS);
 
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [streamActive]);
+  //   return () => {
+  //     cancelled = true;
+  //     clearInterval(interval);
+  //   };
+  // }, [streamActive]);
 
   const content = (
     <>
