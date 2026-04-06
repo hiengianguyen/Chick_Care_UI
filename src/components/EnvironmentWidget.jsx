@@ -8,7 +8,7 @@ const EnvironmentWidget = () => {
   // useEffect(() => {
   //   const fetchData = () => {
   //     axios
-  //       .get("http://localhost:5000/api/sensor")
+  //       .get("http://localhost:5000/api/temp-sensor")
   //       .then((res) => {
   //         console.log(res.data);
   //         setData(res.data);

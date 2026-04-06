@@ -13,9 +13,13 @@ import {
   Percent,
   Smartphone,
   Power,
-  MoveLeft
+  MoveLeft,
+  ChevronRight,
+  Cog
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
+import axios from "axios";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const Features = () => {
   const navigator = useNavigate();
@@ -30,31 +34,26 @@ const Features = () => {
     power: 80,
     mode: "Tự động", // 'Tự động' hoặc 'Hẹn giờ'
     times: ["08:00"],
-    selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+    selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+    isEditTime: false
   });
 
   // 2. Đèn Sưởi (Heater)
   const [lightConfig, setLightConfig] = useState({
-    active: false,
+    active: true,
     times: ["18:00"],
-    selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+    power: 80,
+    selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+    isEditTime: false
   });
 
-  // 3. Phun Sương (Mister)
-  const [mistConfig, setMistConfig] = useState({
-    active: false,
-    thresholdTemp: 32,
-    thresholdHumid: 50,
-    mode: "Cảm biến",
-    selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
-  });
-
-  // 4. Cho ăn (Feeder)
+  // 3. Cho ăn (Feeder)
   const [feederConfig, setFeederConfig] = useState({
     active: true,
     amount: "Vừa",
     times: ["07:00", "16:30"],
-    selectedDays: ["T2", "T4", "T6"]
+    selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+    isEditTime: false
   });
 
   useEffect(() => {
@@ -63,39 +62,65 @@ const Features = () => {
   }, []);
 
   // --- HÀM XỬ LÝ CHUNG ---
+
+  const resetStateIsEditTime = () => {
+    setFanConfig((prev) => {
+      return { ...prev, isEditTime: false };
+    });
+    setLightConfig((prev) => {
+      return { ...prev, isEditTime: false };
+    });
+    setFeederConfig((prev) => {
+      return { ...prev, isEditTime: false };
+    });
+  };
+
+  const handleData = () => {
+    const dataList = {
+      fan: fanConfig,
+      light: lightConfig,
+      feed: feederConfig
+    };
+
+    const sendData = async () => {
+      await axios.post(`${API_BASE}/api/get_data_device`, dataList).finally(() => resetStateIsEditTime());
+    };
+    sendData();
+  };
+
   const toggleDay = (config, setConfig, day) => {
     const currentDays = [...config.selectedDays];
     const newDays = currentDays.includes(day) ? currentDays.filter((d) => d !== day) : [...currentDays, day];
-    setConfig({ ...config, selectedDays: newDays });
+    setConfig({ ...config, selectedDays: newDays, isEditTime: true });
   };
 
   const addTime = (config, setConfig) => {
     if (config.times.length < 5) {
-      setConfig({ ...config, times: [...config.times, "12:00"] });
+      setConfig({ ...config, times: [...config.times, "12:00"], isEditTime: true });
     }
   };
 
   const removeTime = (config, setConfig, index) => {
     if (config.times.length > 1) {
       const newTimes = config.times.filter((_, i) => i !== index);
-      setConfig({ ...config, times: newTimes });
+      setConfig({ ...config, times: newTimes, isEditTime: true });
     }
   };
 
   const updateTime = (config, setConfig, index, value) => {
     const newTimes = [...config.times];
     newTimes[index] = value;
-    setConfig({ ...config, times: newTimes });
+    setConfig({ ...config, times: newTimes, isEditTime: true });
   };
 
   // --- GIAO DIỆN COMPONENT CON ---
-  const DayPicker = ({ config, setConfig }) => (
-    <div className="flex flex-wrap gap-1.5 pt-2">
+  const DayPicker = ({ config, setConfig, color }) => (
+    <div className="flex flex-wrap gap-1.5">
       {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day) => (
         <button
           key={day}
           onClick={() => toggleDay(config, setConfig, day)}
-          className={`w-8 h-8 rounded-lg border text-[10px] font-bold transition-all ${config.selectedDays.includes(day) ? "bg-indigo-600 border-indigo-600 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400 hover:border-indigo-200"}`}
+          className={`w-8 h-8 rounded-lg border text-[10px] font-bold transition-all ${config.selectedDays.includes(day) ? `bg-${color} border-${color} text-white shadow-sm` : "bg-white border-slate-200 text-slate-400 hover:border-indigo-200"}`}
         >
           {day}
         </button>
@@ -116,10 +141,11 @@ const Features = () => {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <button className="p-2 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-500">
-            <Bell size={20} />
-          </button>
+        <div
+          className="px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-100 w-max"
+          title="Các thiết bị sẽ tự động chạy khi thoả mãn điều kiện mà không cần bật tắt thủ công"
+        >
+          <span className="text-[12px] font-black text-emerald-600 uppercase">Đang kích hoạt tự động</span>
         </div>
       </header>
       <div>
@@ -131,7 +157,7 @@ const Features = () => {
           <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className={`p-4 rounded-2xl ${fanConfig.active ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                <div className={`p-4 rounded-2xl bg-blue-500 text-white`}>
                   <Wind size={24} />
                 </div>
                 <div>
@@ -139,16 +165,21 @@ const Features = () => {
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Theo dõi cảm biến</p>
                 </div>
               </div>
-              <button
-                onClick={() => setFanConfig({ ...fanConfig, active: !fanConfig.active })}
-                className={`w-12 h-6 rounded-full relative transition-all ${fanConfig.active ? "bg-blue-500" : "bg-slate-200"}`}
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${fanConfig.active ? "right-1" : "left-1"}`}
-                ></div>
-              </button>
-            </div>
 
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
+                <button
+                  onClick={() => setFanConfig({ ...fanConfig, active: !fanConfig.active })}
+                  className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${fanConfig.active ? "bg-blue-500" : "bg-slate-200"}`}
+                >
+                  <div
+                    className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${fanConfig.active ? "right-1" : "left-1"}`}
+                  >
+                    <Power size={12} className={fanConfig.active ? "text-blue-500" : "text-slate-300"} />
+                  </div>
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thiết lập vận hành</label>
@@ -162,13 +193,16 @@ const Features = () => {
                     min="20"
                     max="40"
                     value={fanConfig.thresholdTemp}
-                    onChange={(e) => setFanConfig({ ...fanConfig, thresholdTemp: e.target.value })}
+                    onChange={(e) => setFanConfig({ ...fanConfig, thresholdTemp: e.target.value, isEditTime: false })}
                     className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer accent-blue-500"
                   />
 
                   <div className="flex justify-between items-center pt-2">
-                    <span className="text-[10px] font-bold text-slate-500">CÔNG SUẤT ({fanConfig.power}%)</span>
-                    <Percent size={14} className="text-blue-500" />
+                    <span className="text-[10px] font-bold text-slate-500">CÔNG SUẤT</span>
+                    <div className="text-blue-600 flex items-center w-max text-xs font-black">
+                      <p>{fanConfig.power}</p>
+                      <Percent size={14} />
+                    </div>
                   </div>
                   <input
                     type="range"
@@ -176,11 +210,11 @@ const Features = () => {
                     max="100"
                     step="10"
                     value={fanConfig.power}
-                    onChange={(e) => setFanConfig({ ...fanConfig, power: e.target.value })}
+                    onChange={(e) => setFanConfig({ ...fanConfig, power: Number(e.target.value), isEditTime: false })}
                     className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer accent-blue-500"
                   />
                 </div>
-                <DayPicker config={fanConfig} setConfig={setFanConfig} />
+                <DayPicker config={fanConfig} setConfig={setFanConfig} color={"blue-500"} />
               </div>
 
               <div className="space-y-4">
@@ -214,9 +248,7 @@ const Features = () => {
           <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div
-                  className={`p-4 rounded-2xl ${lightConfig.active ? "bg-orange-500 text-white shadow-lg shadow-orange-100" : "bg-slate-100 text-slate-400"}`}
-                >
+                <div className={`p-4 rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-100`}>
                   <Sun size={24} />
                 </div>
                 <div>
@@ -224,25 +256,44 @@ const Features = () => {
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Hẹn giờ linh hoạt</p>
                 </div>
               </div>
-              <button
-                onClick={() => setLightConfig({ ...lightConfig, active: !lightConfig.active })}
-                className={`w-12 h-6 rounded-full relative transition-all ${lightConfig.active ? "bg-orange-500" : "bg-slate-200"}`}
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${lightConfig.active ? "right-1" : "left-1"}`}
-                ></div>
-              </button>
+
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
+                <button
+                  onClick={() => setLightConfig({ ...lightConfig, active: !lightConfig.active, isEditTime: false })}
+                  className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${lightConfig.active ? "bg-orange-500" : "bg-slate-200"}`}
+                >
+                  <div
+                    className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${lightConfig.active ? "right-1" : "left-1"}`}
+                  >
+                    <Power size={12} className={lightConfig.active ? "text-orange-500" : "text-slate-300"} />
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ngày hoạt động</label>
-                <DayPicker config={lightConfig} setConfig={setLightConfig} />
-                <div className="mt-4 p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                  <p className="text-[10px] text-orange-600 font-bold leading-relaxed italic">
-                    * Hệ thống sẽ tự động bật đèn sưởi theo danh sách giờ đã thiết lập để đảm bảo thân nhiệt đàn gà.
-                  </p>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thiết lập vận hành</label>
+                <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-500">CÔNG SUẤT</span>
+                    <div className="text-orange-500 flex items-center w-max text-xs font-black">
+                      <p>{lightConfig.power}</p>
+                      <Percent size={14} />
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    step="10"
+                    value={lightConfig.power}
+                    onChange={(e) => setLightConfig({ ...lightConfig, power: Number(e.target.value), isEditTime: false })}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer accent-orange-500"
+                  />
                 </div>
+                <DayPicker config={lightConfig} setConfig={setLightConfig} color={"orange-500"} />
               </div>
 
               <div className="space-y-4">
@@ -272,80 +323,11 @@ const Features = () => {
             </div>
           </div>
 
-          {/* --- KHỐI PHUN SƯƠNG (MISTER) --- */}
-          <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`p-4 rounded-2xl ${mistConfig.active ? "bg-cyan-500 text-white" : "bg-slate-100 text-slate-400"}`}>
-                  <Droplets size={24} />
-                </div>
-                <div>
-                  <h2 className="font-black text-slate-800 uppercase text-sm">Hệ thống Phun Sương</h2>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Theo dõi cảm biến</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setMistConfig({ ...mistConfig, active: !mistConfig.active })}
-                className={`w-12 h-6 rounded-full relative transition-all ${mistConfig.active ? "bg-cyan-500" : "bg-slate-200"}`}
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${mistConfig.active ? "right-1" : "left-1"}`}
-                ></div>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ngưỡng cảm biến</label>
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-5">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[10px] font-bold">
-                      <span className="text-slate-500 uppercase">NHIỆT ĐỘ CAO HƠN {">"}</span>
-                      <span className="text-cyan-600">{mistConfig.thresholdTemp}°C</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="25"
-                      max="45"
-                      value={mistConfig.thresholdTemp}
-                      onChange={(e) => setMistConfig({ ...mistConfig, thresholdTemp: e.target.value })}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[10px] font-bold">
-                      <span className="text-slate-500 uppercase">ĐỘ ẨM THẤP HƠN {"<"}</span>
-                      <span className="text-cyan-600">{mistConfig.thresholdHumid}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="30"
-                      max="80"
-                      value={mistConfig.thresholdHumid}
-                      onChange={(e) => setMistConfig({ ...mistConfig, thresholdHumid: e.target.value })}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lịch hoạt động</label>
-                <DayPicker config={mistConfig} setConfig={setMistConfig} />
-                <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-xl border border-cyan-100 mt-2">
-                  <Activity size={18} className="text-cyan-600" />
-                  <p className="text-[10px] font-bold text-cyan-700">
-                    Hệ thống sẽ phun khi CẢ 2 ĐIỀU KIỆN trên thỏa mãn vào các ngày đã chọn.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* --- KHỐI CHO ĂN (FEEDER) - GIỮ LẠI ĐỂ ĐỒNG BỘ --- */}
           <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className={`p-4 rounded-2xl ${feederConfig.active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                <div className={`p-4 rounded-2xl bg-emerald-500 text-white`}>
                   <UtensilsCrossed size={24} />
                 </div>
                 <div>
@@ -353,25 +335,31 @@ const Features = () => {
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Khối lượng: {feederConfig.amount}</p>
                 </div>
               </div>
-              <button
-                onClick={() => setFeederConfig({ ...feederConfig, active: !feederConfig.active })}
-                className={`w-12 h-6 rounded-full relative transition-all ${feederConfig.active ? "bg-emerald-500" : "bg-slate-200"}`}
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${feederConfig.active ? "right-1" : "left-1"}`}
-                ></div>
-              </button>
+
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
+                <button
+                  onClick={() => setFeederConfig({ ...feederConfig, active: !feederConfig.active, isEditTime: false })}
+                  className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${feederConfig.active ? "bg-emerald-500" : "bg-slate-200"}`}
+                >
+                  <div
+                    className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${feederConfig.active ? "right-1" : "left-1"}`}
+                  >
+                    <Power size={12} className={feederConfig.active ? "text-emerald-500" : "text-slate-300"} />
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chu kỳ ngày</label>
-                <DayPicker config={feederConfig} setConfig={setFeederConfig} />
+                <DayPicker config={feederConfig} setConfig={setFeederConfig} color={"emerald-500"} />
                 <div className="flex gap-2 pt-2">
                   {["Ít", "Vừa", "Nhiều"].map((lv) => (
                     <button
                       key={lv}
-                      onClick={() => setFeederConfig({ ...feederConfig, amount: lv })}
+                      onClick={() => setFeederConfig({ ...feederConfig, amount: lv, isEditTime: false })}
                       className={`flex-1 py-2 rounded-lg text-[10px] font-black border transition-all ${feederConfig.amount === lv ? "bg-emerald-500 border-emerald-500 text-white shadow-md" : "bg-white text-slate-400 border-slate-100"}`}
                     >
                       {lv}
@@ -411,6 +399,18 @@ const Features = () => {
             </div>
           </div>
         </main>
+        <div className="pt-6 border-t border-slate-100 flex justify-center">
+          <button
+            onClick={() => handleData()}
+            className="group relative flex items-center gap-3 px-12 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-200 transition-all duration-300 active:scale-95"
+          >
+            <div className="p-2 bg-white/10 rounded-xl group-hover:rotate-90 transition-transform duration-500">
+              <Cog size={20} />
+            </div>
+            Bắt đầu cấu hình & Thiết lập
+            <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
       </div>
 
       <style
