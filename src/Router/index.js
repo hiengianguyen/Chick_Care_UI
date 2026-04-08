@@ -1,6 +1,7 @@
 import Features from "../Pages/Features/Features";
 import DashBoard from "../Pages/DashBoard/DashBoard";
 import Home from "../Pages/Home/Home";
+import Notifications from "../Pages/Notifications/Notifications";
 
 const publicRouters = [
   {
@@ -17,6 +18,11 @@ const publicRouters = [
     name: "Feature",
     component: Features,
     path: "/features"
+  },
+  {
+    name: "Notifications",
+    component: Notifications,
+    path: "/notifications"
   }
 ];
 const privateRouters = [];
