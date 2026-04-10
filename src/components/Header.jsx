@@ -1,12 +1,44 @@
-import { Bell } from "lucide-react";
-import { useState } from "react";
+import { Bell, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import chickLogo from "../public/img/chick.png";
+import { useNavigate } from "react-router-dom";
 
 const Header = ({ currentTime }) => {
+  const navigation = useNavigate();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [headerNotifications, setHeaderNotifications] = useState([
+    {
+      id: 1,
+      title: "Thông báo mẫu 1",
+      description: "Mô tả thông báo..."
+    },
+    {
+      id: 2,
+      title: "Thông báo mẫu 2",
+      description: "Mô tả thông báo..."
+    },
+    {
+      id: 3,
+      title: "Thông báo mẫu 3",
+      description: "Mô tả thông báo..."
+    }
+  ]);
 
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
+  };
+
+  const handleDeleteNotification = (id) => {
+    const notificationToDelete = headerNotifications.find((n) => n.id === id);
+    if (notificationToDelete) {
+      const updated = headerNotifications.filter((n) => n.id !== id);
+      setHeaderNotifications(updated);
+
+      // Save to localStorage
+      const stored = JSON.parse(localStorage.getItem("deletedNotifications") || "[]");
+      stored.push(notificationToDelete);
+      localStorage.setItem("deletedNotifications", JSON.stringify(stored));
+    }
   };
 
   return (
@@ -46,22 +78,33 @@ const Header = ({ currentTime }) => {
                 <h3 className="text-lg font-semibold text-slate-800">Thông báo</h3>
               </div>
               <div className="max-h-64 overflow-y-auto">
-                {/* Placeholder cho thông báo - bạn có thể map data ở đây */}
-                <div className="p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer">
-                  <p className="text-sm text-slate-700">Thông báo mẫu 1</p>
-                  <p className="text-xs text-slate-500 mt-1">Mô tả thông báo...</p>
-                </div>
-                <div className="p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer">
-                  <p className="text-sm text-slate-700">Thông báo mẫu 2</p>
-                  <p className="text-xs text-slate-500 mt-1">Mô tả thông báo...</p>
-                </div>
-                <div className="p-4 hover:bg-slate-50 cursor-pointer">
-                  <p className="text-sm text-slate-700">Thông báo mẫu 3</p>
-                  <p className="text-xs text-slate-500 mt-1">Mô tả thông báo...</p>
-                </div>
+                {headerNotifications.length > 0 ? (
+                  headerNotifications.map((note) => (
+                    <div
+                      key={note.id}
+                      className="p-4 border-b border-slate-100 hover:bg-slate-50 flex items-start justify-between gap-2 group"
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm text-slate-700 font-medium">{note.title}</p>
+                        <p className="text-xs text-slate-500 mt-1">{note.description}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteNotification(note.id)}
+                        className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
+                        title="Xoá thông báo"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-slate-400 text-sm">Không có thông báo</div>
+                )}
               </div>
               <div className="p-4 border-t border-slate-200 text-center">
-                <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Xem tất cả thông báo</button>
+                <button onClick={() => navigation("/notifications")} className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                  Xem tất cả thông báo
+                </button>
               </div>
             </div>
           )}
