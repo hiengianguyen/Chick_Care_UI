@@ -26,13 +26,16 @@ const DashBoard = () => {
           <div className="xl:col-span-8 space-y-6">
             <CameraSection />
             <CardRedirectFeatures />
+            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
+              Hệ thống điều khiển bằng giọng nói
+            </h2>
+
             <VoiceAssistantCompact />
           </div>
 
           <div className="xl:col-span-4 space-y-6">
             <EnvironmentWidget />
             <AlertsWidget />
-            <ActivityLog />
           </div>
         </div>
       </main>

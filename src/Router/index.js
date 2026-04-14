@@ -2,7 +2,6 @@ import Features from "../Pages/Features/Features";
 import DashBoard from "../Pages/DashBoard/DashBoard";
 import Home from "../Pages/Home/Home";
 import Notifications from "../Pages/Notifications/Notifications";
-import DeletedNotifications from "../Pages/Notifications/DeletedNotifications";
 
 const publicRouters = [
   {
@@ -24,11 +23,6 @@ const publicRouters = [
     name: "Notifications",
     component: Notifications,
     path: "/notifications"
-  },
-  {
-    name: "DeletedNotifications",
-    component: DeletedNotifications,
-    path: "/deleted-notifications"
   }
 ];
 const privateRouters = [];
