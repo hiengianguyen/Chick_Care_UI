@@ -1,9 +1,9 @@
-import { AlertTriangle, ArrowLeft, Bell, ChevronRight, Clock, Trash2, Expand } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Clock, Trash2, Expand } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const Notifications = ({ onBack }) => {
+const Notifications = () => {
   const navigation = useNavigate();
   const [alerts, setAlerts] = useState([]);
   const [expandedImages, setExpandedImages] = useState({});
@@ -47,6 +47,14 @@ const Notifications = ({ onBack }) => {
     fetchAlerts();
   }, []);
 
+  const deleteNoti = async (id) => {
+    await axios.delete("http://localhost:5000/api/noti/" + id).then((datas) => {
+      setAlerts((alerts) => {
+        return alerts.filter((alert) => alert.id != datas.data.id);
+      });
+    });
+  };
+
   const getTimeAgo = (date) => {
     const now = new Date();
     const diffInMs = now - date;
@@ -82,13 +90,6 @@ const Notifications = ({ onBack }) => {
             <ArrowLeft size={20} />
           </button>
           <h1 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Thông báo & Báo cáo</h1>
-          <button
-            onClick={() => navigation("/deleted-notifications")}
-            className="p-3 bg-white rounded-2xl text-slate-400 hover:text-slate-800 transition-all shadow-sm border border-slate-200 relative group"
-            title="Xem thùng rác"
-          >
-            <Trash2 size={20} />
-          </button>
         </div>
 
         {/* Feed Style List */}
@@ -129,7 +130,11 @@ const Notifications = ({ onBack }) => {
                       <span className="text-[10px] font-bold uppercase tracking-widest">{alert.time}</span>
                     </div>
                   </div>
-                  <button className="text-slate-300 hover:text-red-600 transition-colors p-1" title="Xoá thông báo">
+                  <button
+                    onClick={() => deleteNoti(alert.id)}
+                    className="text-slate-300 hover:text-red-600 transition-colors p-1"
+                    title="Xoá thông báo"
+                  >
                     <Trash2 size={20} />
                   </button>
                 </div>
