@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import CameraSection from "../../components/CameraSection";
 import EnvironmentWidget from "../../components/EnvironmentWidget";
-import DensityWidget from "../../components/DensityWidget";
 import AlertsWidget from "../../components/AlertsWidget";
 import ActivityLog from "../../components/ActivityLog";
 import ListStatCard from "../../components/ListStatCard";
 import CardRedirectFeatures from "../../components/CardRedirectFeatures";
-
-// const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import VoiceAssistantCompact from "../../components/VoiceAssistantCompact";
 
 const DashBoard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -24,16 +22,15 @@ const DashBoard = () => {
 
       <main className="max-w-[1600px] mx-auto space-y-6">
         <ListStatCard />
-
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           <div className="xl:col-span-8 space-y-6">
             <CameraSection />
             <CardRedirectFeatures />
+            <VoiceAssistantCompact />
           </div>
 
           <div className="xl:col-span-4 space-y-6">
             <EnvironmentWidget />
-            <DensityWidget />
             <AlertsWidget />
             <ActivityLog />
           </div>

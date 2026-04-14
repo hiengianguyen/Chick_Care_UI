@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { Camera, Layers, Maximize2, Loader2 } from "lucide-react";
+import { Maximize2, Loader2 } from "lucide-react";
 import axios from "axios";
 import { GlobalContext } from "./GlobalContext";
 
@@ -10,88 +10,110 @@ const CameraSection = () => {
   const { setData } = useContext(GlobalContext);
   const [streamActive, setStreamActive] = useState(false);
   const [annotatedImageUrl, setAnnotatedImageUrl] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
-  const [showResult, setShowResult] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // useEffect(() => {
-  // Khi component mount, yêu cầu backend bật stream 1 lần
-  // const startStream = async () => {
-  //   try {
-  //     await axios.post(`${API_BASE}/api/start-stream`);
-  //     setStreamActive(true);
-  //     setError(null);
-  //   } catch (err) {
-  //     setError(err.response?.data?.error || err.message || "Không thể bật stream từ server");
-  //     setStreamActive(false);
-  //   }
-  // };
+  useEffect(() => {
+    // Khi component mount, yêu cầu backend bật stream 1 lần
+    const startStream = async () => {
+      try {
+        await axios.post(`${API_BASE}/api/start-stream`);
+        setStreamActive(true);
+        setError(null);
+      } catch (err) {
+        setError(err.response?.data?.error || err.message || "Không thể bật stream từ server");
+        setStreamActive(false);
+      }
+    };
 
-  //   startStream();
-  // }, []);
+    startStream();
+  }, []);
 
-  // useEffect(() => {
-  //   if (!streamActive) return;
+  useEffect(() => {
+    if (!streamActive) return;
 
-  //   let cancelled = false;
+    let cancelled = false;
 
-  //   const refresh = async () => {
-  //     setLoading(true);
-  //     try {
-  //       // Cập nhật URL ảnh để tránh cache
-  //       setAnnotatedImageUrl(`${API_BASE}/api/stream-frame?t=${Date.now()}`);
+    const refresh = async () => {
+      try {
+        // Cập nhật URL ảnh để tránh cache
+        setAnnotatedImageUrl(`${API_BASE}/api/stream-frame?t=${Date.now()}`);
 
-  //       const { data } = await axios.get(`${API_BASE}/api/latest-data`);
-  //       if (!cancelled) {
-  //         setData(data);
-  //         setLastResult(data);
-  //         setError(null);
-  //       }
-  //     } catch (err) {
-  //       if (!cancelled) {
-  //         setError(err.response?.data?.error || err.message || "Lỗi lấy dữ liệu từ API");
-  //       }
-  //     } finally {
-  //       if (!cancelled) {
-  //         setLoading(false);
-  //       }
-  //     }
-  //   };
+        const { data } = await axios.get(`${API_BASE}/api/latest-data`);
 
-  //   // Gọi ngay lần đầu
-  //   refresh();
-  //   const interval = setInterval(refresh, REFRESH_INTERVAL_MS);
+        if (!cancelled) {
+          setData((prev) => {
+            if (data?.alerts?.length) {
+              return data;
+            } else return { ...data, alerts: prev?.alerts || [] };
+          });
+          setLastResult((prev) => {
+            if (data?.alerts?.length) {
+              return data;
+            } else return { ...data, alerts: prev?.alerts || [] };
+          });
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.response?.data?.error || err.message || "Lỗi lấy dữ liệu từ API");
+        }
+      }
+    };
 
-  //   return () => {
-  //     cancelled = true;
-  //     clearInterval(interval);
-  //   };
-  // }, [streamActive]);
+    // Gọi ngay lần đầu
+    refresh();
+    const interval = setInterval(refresh, REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [streamActive]);
+
+  const CameraPlaceholder = () => {
+    return (
+      <div className="absolute inset-0 bg-slate-100 flex flex-col items-center justify-center overflow-hidden">
+        {/* Nội dung chính ở giữa - Đơn giản với Spinner */}
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-md border border-slate-200">
+            <Loader2 size={32} className="text-indigo-600 animate-spin" />
+          </div>
+
+          <div className="text-center">
+            <h3 className="text-sm font-black text-slate-700 uppercase tracking-tight">Vui lòng đợi</h3>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-1">Kết nối camera hiện trường</p>
+          </div>
+        </div>
+
+        {/* Thông tin kỹ thuật góc dưới */}
+        <div className="absolute bottom-6 right-6">
+          <span className="text-[9px] font-mono text-slate-300 uppercase tracking-tighter">Status: Connecting_to_node_01</span>
+        </div>
+      </div>
+    );
+  };
 
   const content = (
     <>
-      <div className="absolute top-0 inset-x-0 p-8 bg-gradient-to-b from-black/80 via-black/20 to-transparent z-10 flex items-center justify-between pointer-events-none">
+      <div
+        className={
+          "absolute top-0 inset-x-0 p-8 bg-gradient-to-b to-transparent z-10 flex items-center justify-between pointer-events-none" +
+          " " +
+          (!error && "from-black/80 via-black/20")
+        }
+      >
         <div className="flex items-center gap-3 pointer-events-auto">
           <div className="flex items-center gap-2 bg-black/40 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10">
             <div className={`w-2 h-2 rounded-full ${streamActive ? "bg-emerald-500 animate-pulse" : "bg-slate-500"}`} />
             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">
-              {streamActive ? "Live Stream: Zone A1" : "Đang tắt"}
+              {!error ? "Live Stream: Zone A1" : "Đang tải luồng video..."}
             </span>
           </div>
           {lastResult && streamActive && <span className="text-[10px] text-white/80">Phát hiện: {lastResult.predictions_count} gà</span>}
         </div>
         <div className="flex gap-3 pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setShowResult((prev) => !prev)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black transition-all border border-white/10 backdrop-blur-md ${
-              showResult ? "bg-orange-500 text-white border-orange-400" : "bg-white/10 text-white hover:bg-white/20"
-            }`}
-          >
-            <Layers size={16} /> {showResult ? "XEM CAMERA" : "XEM KẾT QUẢ"}
-          </button>
           <button
             type="button"
             onClick={() => setIsFullscreen((prev) => !prev)}
@@ -106,30 +128,9 @@ const CameraSection = () => {
         </div>
       </div>
 
-      <div className="w-full h-full flex items-center justify-center bg-[#0f172a] relative min-h-[320px]">
-        {!streamActive && !annotatedImageUrl && (
-          <>
-            <Camera size={80} className="text-slate-800 opacity-20" />
-            <p className="absolute bottom-1/3 text-slate-500 text-sm">Nhấn "BẬT WEBCAM" để bắt đầu phân tích YOLO</p>
-          </>
-        )}
-        {annotatedImageUrl && !showResult && (
-          <img src={annotatedImageUrl} alt="Camera stream" className="absolute inset-0 w-full h-full object-cover" />
-        )}
-        {annotatedImageUrl && showResult && (
-          <img src={annotatedImageUrl} alt="Kết quả phân tích với bounding box" className="absolute inset-0 w-full h-full object-contain" />
-        )}
-        {loading && error && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/60 text-white px-4 py-2 rounded-xl">
-            <Loader2 size={20} className="animate-spin" />
-            <span className="text-sm font-medium">Đang phân tích...</span>
-          </div>
-        )}
-        {error && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-rose-500/90 text-white px-4 py-2 rounded-lg text-sm max-w-md text-center">
-            {error}
-          </div>
-        )}
+      <div className="w-full h-full flex items-center justify-center relative min-h-[320px]">
+        {error && <CameraPlaceholder />}
+        {!error && <img src={annotatedImageUrl} alt="Camera stream" className="absolute inset-0 w-full h-full object-cover" />}
       </div>
     </>
   );
@@ -137,15 +138,13 @@ const CameraSection = () => {
   if (isFullscreen) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-        <div className="bg-slate-900 rounded-[2rem] overflow-hidden border border-slate-800 relative group w-[94vw] h-[88vh] max-w-7xl mx-4 shadow-2xl">
-          {content}
-        </div>
+        <div className="rounded-[2rem] overflow-hidden border relative group w-[94vw] h-[88vh] max-w-7xl mx-4 shadow-2xl">{content}</div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 rounded-[1.5rem] overflow-hidden shadow-2xl border border-slate-800 relative group aspect-video lg:aspect-auto lg:h-[500px]">
+    <div className="rounded-[1.5rem] overflow-hidden shadow-xl borde relative group aspect-video lg:aspect-auto lg:h-[500px]">
       {content}
     </div>
   );
