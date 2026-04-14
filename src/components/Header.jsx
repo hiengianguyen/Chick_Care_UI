@@ -2,43 +2,76 @@ import { Bell, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import chickLogo from "../public/img/chick.png";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Header = ({ currentTime }) => {
   const navigation = useNavigate();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [headerNotifications, setHeaderNotifications] = useState([
-    {
-      id: 1,
-      title: "Thông báo mẫu 1",
-      description: "Mô tả thông báo..."
-    },
-    {
-      id: 2,
-      title: "Thông báo mẫu 2",
-      description: "Mô tả thông báo..."
-    },
-    {
-      id: 3,
-      title: "Thông báo mẫu 3",
-      description: "Mô tả thông báo..."
+  const [headerNotifications, setHeaderNotifications] = useState([]);
+  const [newCount, setNewCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/noti-alerts?limit=5");
+        const data = response.data;
+        const mappedNotifications = data.alerts.map((alert) => {
+          let createdDate;
+          if (alert.createdAt && alert.createdAt.toDate) {
+            createdDate = alert.createdAt.toDate();
+          } else if (alert.createdAt && typeof alert.createdAt === "string") {
+            createdDate = new Date(alert.createdAt);
+          } else if (alert.createdAt && alert.createdAt.seconds) {
+            createdDate = new Date(alert.createdAt.seconds * 1000);
+          } else {
+            createdDate = new Date();
+          }
+          const now = new Date();
+          const diffInMs = now - createdDate;
+          const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+          const isNew = diffInMinutes <= 30;
+          return {
+            id: alert.id,
+            title: alert.shortTitle || alert.title,
+            description: alert.message,
+            time: getTimeAgo(createdDate),
+            isNew
+          };
+        });
+        setHeaderNotifications(mappedNotifications);
+        setNewCount(mappedNotifications.filter((n) => n.isNew).length);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  const getTimeAgo = (date) => {
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} phút trước`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} giờ trước`;
+    } else {
+      return `${diffInDays} ngày trước`;
     }
-  ]);
+  };
 
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
   };
 
   const handleDeleteNotification = (id) => {
-    const notificationToDelete = headerNotifications.find((n) => n.id === id);
-    if (notificationToDelete) {
-      const updated = headerNotifications.filter((n) => n.id !== id);
-      setHeaderNotifications(updated);
-
-      // Save to localStorage
-      const stored = JSON.parse(localStorage.getItem("deletedNotifications") || "[]");
-      stored.push(notificationToDelete);
-      localStorage.setItem("deletedNotifications", JSON.stringify(stored));
-    }
+    // For now, just remove from UI (in future, implement soft delete via API)
+    const updated = headerNotifications.filter((n) => n.id !== id);
+    setHeaderNotifications(updated);
   };
 
   return (
@@ -70,7 +103,7 @@ const Header = ({ currentTime }) => {
             className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 relative group transition-all"
           >
             <Bell size={20} className="text-slate-600 group-hover:rotate-12 transition-transform" />
-            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />
+            {newCount > 0 && <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />}
           </button>
           {isNotificationOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-slate-200 z-50">
@@ -85,8 +118,12 @@ const Header = ({ currentTime }) => {
                       className="p-4 border-b border-slate-100 hover:bg-slate-50 flex items-start justify-between gap-2 group"
                     >
                       <div className="flex-1">
-                        <p className="text-sm text-slate-700 font-medium">{note.title}</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm text-slate-700 font-medium">{note.title}</p>
+                          {note.isNew && <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 text-xs font-bold rounded">Mới</span>}
+                        </div>
                         <p className="text-xs text-slate-500 mt-1">{note.description}</p>
+                        <p className="text-xs text-slate-400 mt-1">{note.time}</p>
                       </div>
                       <button
                         onClick={() => handleDeleteNotification(note.id)}

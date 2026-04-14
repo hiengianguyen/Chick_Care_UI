@@ -32,7 +32,7 @@ const Features = () => {
     active: false,
     thresholdTemp: 30,
     power: 80,
-    mode: "Tự động", // 'Tự động' hoặc 'Hẹn giờ'
+    mode: "Tự động",
     times: ["08:00"],
     selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
     isEditTime: false
@@ -41,8 +41,10 @@ const Features = () => {
   // 2. Đèn Sưởi (Heater)
   const [lightConfig, setLightConfig] = useState({
     active: false,
-    times: ["18:00"],
+    thresholdTemp: 25,
     power: 80,
+    mode: "Tự động",
+    times: ["18:00"],
     selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
     isEditTime: false
   });
@@ -53,13 +55,45 @@ const Features = () => {
     amount: "Vừa",
     times: ["07:00", "16:30"],
     selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-    isEditTime: false
+    isEditTime: false,
+    mode: "Tự động"
   });
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Load config từ API khi mount
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await axios.get(`${API_BASE}/api/devices`);
+        const data = response.data;
+
+        if (data.fan) setFanConfig(data.fan);
+        if (data.light) setLightConfig(data.light);
+        if (data.feed) setFeederConfig(data.feed);
+      } catch (error) {
+        console.error("Error loading config:", error);
+      }
+    };
+    loadConfig();
+  }, []);
+
+  // Tự động tắt feed sau duration khi chế độ thủ công
+  useEffect(() => {
+    if (feederConfig.active && feederConfig.mode === "Thủ công") {
+      const durationMap = { Ít: 5000, Vừa: 10000, Nhiều: 15000 };
+      const duration = durationMap[feederConfig.amount] + 2000;
+
+      const timer = setTimeout(() => {
+        setFeederConfig((prev) => ({ ...prev, active: false }));
+      }, duration);
+
+      return () => clearTimeout(timer);
+    }
+  }, [feederConfig.active, feederConfig.mode, feederConfig.amount]);
 
   // --- HÀM XỬ LÝ CHUNG ---
 
@@ -169,7 +203,14 @@ const Features = () => {
               <div className="flex flex-col items-end gap-2">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
                 <button
-                  onClick={() => setFanConfig({ ...fanConfig, active: !fanConfig.active })}
+                  onClick={() =>
+                    setFanConfig({
+                      ...fanConfig,
+                      active: !fanConfig.active,
+                      mode: fanConfig.active ? "Tự động" : "Thủ công",
+                      isEditTime: false
+                    })
+                  }
                   className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${fanConfig.active ? "bg-blue-500" : "bg-slate-200"}`}
                 >
                   <div
@@ -185,7 +226,7 @@ const Features = () => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thiết lập vận hành</label>
                 <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-500">NHIỆT ĐỘ KÍCH HOẠT</span>
+                    <span className="text-[10px] font-bold text-slate-500">NHIỆT ĐỘ CAO HƠN ĐỂ KÍCH HOẠT</span>
                     <span className="text-xs font-black text-blue-600">{fanConfig.thresholdTemp}°C</span>
                   </div>
                   <input
@@ -194,7 +235,7 @@ const Features = () => {
                     max="40"
                     value={fanConfig.thresholdTemp}
                     onChange={(e) => setFanConfig({ ...fanConfig, thresholdTemp: e.target.value, isEditTime: false })}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg Featuresearance-none cursor-pointer accent-blue-500"
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
                   />
 
                   <div className="flex justify-between items-center pt-2">
@@ -253,14 +294,21 @@ const Features = () => {
                 </div>
                 <div>
                   <h2 className="font-black text-slate-800 uppercase text-sm">Đèn Sưởi Ấm</h2>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Hẹn giờ linh hoạt</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Theo dõi cảm biến</p>
                 </div>
               </div>
 
               <div className="flex flex-col items-end gap-2">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
                 <button
-                  onClick={() => setLightConfig({ ...lightConfig, active: !lightConfig.active, isEditTime: false })}
+                  onClick={() =>
+                    setLightConfig({
+                      ...lightConfig,
+                      active: !lightConfig.active,
+                      mode: lightConfig.active ? "Tự động" : "Thủ công",
+                      isEditTime: false
+                    })
+                  }
                   className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${lightConfig.active ? "bg-orange-500" : "bg-slate-200"}`}
                 >
                   <div
@@ -277,6 +325,19 @@ const Features = () => {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thiết lập vận hành</label>
                 <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                   <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-500">NHIỆT ĐỘ THẤP HƠN ĐỂ KÍCH HOẠT</span>
+                    <span className="text-xs font-black text-orange-600">{lightConfig.thresholdTemp}°C</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="25"
+                    max="35"
+                    value={lightConfig.thresholdTemp}
+                    onChange={(e) => setLightConfig({ ...lightConfig, thresholdTemp: e.target.value, isEditTime: false })}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                  />
+
+                  <div className="flex justify-between items-center pt-2">
                     <span className="text-[10px] font-bold text-slate-500">CÔNG SUẤT</span>
                     <div className="text-orange-500 flex items-center w-max text-xs font-black">
                       <p>{lightConfig.power}</p>
@@ -339,7 +400,14 @@ const Features = () => {
               <div className="flex flex-col items-end gap-2">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
                 <button
-                  onClick={() => setFeederConfig({ ...feederConfig, active: !feederConfig.active, isEditTime: false })}
+                  onClick={() =>
+                    setFeederConfig({
+                      ...feederConfig,
+                      active: !feederConfig.active,
+                      mode: feederConfig.active ? "Tự động" : "Thủ công",
+                      isEditTime: false
+                    })
+                  }
                   className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${feederConfig.active ? "bg-emerald-500" : "bg-slate-200"}`}
                 >
                   <div

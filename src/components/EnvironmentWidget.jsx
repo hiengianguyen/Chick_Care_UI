@@ -5,22 +5,21 @@ import axios from "axios";
 const EnvironmentWidget = () => {
   const [data, setData] = useState("");
 
-  // useEffect(() => {
-  //   const fetchData = () => {
-  //     axios
-  //       .get("http://localhost:5000/api/temp-sensor")
-  //       .then((res) => {
-  //         console.log(res.data);
-  //         setData(res.data);
-  //       })
-  //       .catch((err) => console.error(err));
-  //   };
+  useEffect(() => {
+    const fetchData = () => {
+      axios
+        .get("http://localhost:5000/api/temp-sensor")
+        .then((res) => {
+          setData(res.data);
+        })
+        .catch((err) => console.error(err));
+    };
 
-  //   fetchData();
-  //   const interval = setInterval(fetchData, 2000);
+    fetchData();
+    const interval = setInterval(fetchData, 2000);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="bg-indigo-600 rounded-[1.5rem] p-8 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
@@ -36,12 +35,12 @@ const EnvironmentWidget = () => {
           <div className="bg-white/10 backdrop-blur-xl rounded-xl p-5 border border-white/10 hover:bg-white/15 transition-all">
             <Thermometer size={20} className="mb-3 text-orange-300" />
             <p className="text-[10px] text-indigo-100 uppercase font-bold mb-1">Nhiệt độ</p>
-            <p className="text-2xl font-black">{data.temp ? data.temp : 0}°C</p>
+            <p className="text-2xl font-black">{data.temperature ? data.temperature : 0}°C</p>
           </div>
           <div className="bg-white/10 backdrop-blur-xl rounded-xl p-5 border border-white/10 hover:bg-white/15 transition-all">
             <Droplets size={20} className="mb-3 text-blue-300" />
             <p className="text-[10px] text-indigo-100 uppercase font-bold mb-1">Độ ẩm</p>
-            <p className="text-2xl font-black">{data.hum ? data.hum : 0}%</p>
+            <p className="text-2xl font-black">{data.humidity ? data.humidity : 0}%</p>
           </div>
         </div>
       </div>
