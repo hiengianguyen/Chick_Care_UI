@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { privateRouters, publicRouters } from "./Router";
 import { io } from "socket.io-client";
+import speak from "./utils/speak";
 
 const socket = io("http://localhost:5000");
 
@@ -24,11 +25,6 @@ const App = () => {
       socket.off("chicken_alert", handler);
     };
   }, []);
-
-  const speak = (text) => {
-    const audio = new Audio(`http://localhost:5000/api/tts?text=${encodeURIComponent(text)}`);
-    audio.play();
-  };
 
   return (
     <BrowserRouter>

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import speak from "../utils/speak";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -50,12 +51,6 @@ const VoiceAssistantCompact = () => {
   const startVoice = () => {
     setIsListening(true);
     recognitionRef.current.start();
-  };
-
-  // 🔊 phát audio từ Flask
-  const speak = (text) => {
-    const audio = new Audio(`http://localhost:5000/api/tts?text=${encodeURIComponent(text)}`);
-    audio.play();
   };
 
   return (
