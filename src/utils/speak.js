@@ -6,8 +6,6 @@ const speak = (text) => {
     currentAudio.currentTime = 0; // Đặt về đầu file
   }
 
-  console.log("currentAudio: ", currentAudio);
-
   // 3. Tạo mới hoặc gán audio mới và phát
   currentAudio = new Audio(`http://localhost:5000/api/tts?text=${encodeURIComponent(text)}`);
   currentAudio.play();
