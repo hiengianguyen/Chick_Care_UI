@@ -3,7 +3,6 @@ import Header from "../../components/Header";
 import CameraSection from "../../components/CameraSection";
 import EnvironmentWidget from "../../components/EnvironmentWidget";
 import AlertsWidget from "../../components/AlertsWidget";
-import ActivityLog from "../../components/ActivityLog";
 import ListStatCard from "../../components/ListStatCard";
 import CardRedirectFeatures from "../../components/CardRedirectFeatures";
 import VoiceAssistantCompact from "../../components/VoiceAssistantCompact";
