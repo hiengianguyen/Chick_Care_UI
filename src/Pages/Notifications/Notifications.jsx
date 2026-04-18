@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowLeft, Clock, Trash2, Expand } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import getTimeAgo from "../../utils/getTimeAgo";
 
 const Notifications = () => {
   const navigation = useNavigate();
@@ -53,22 +54,6 @@ const Notifications = () => {
         return alerts.filter((alert) => alert.id != datas.data.id);
       });
     });
-  };
-
-  const getTimeAgo = (date) => {
-    const now = new Date();
-    const diffInMs = now - date;
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} phút trước`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours} giờ trước`;
-    } else {
-      return `${diffInDays} ngày trước`;
-    }
   };
 
   const toggleImageExpand = (alertId) => {

@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import getTime from "../utils/getTime";
+import getTimeAgo from "../utils/getTimeAgo";
+const socket = io("http://localhost:5000");
 
 const AlertsWidget = () => {
   const navigation = useNavigate();
@@ -13,24 +17,12 @@ const AlertsWidget = () => {
         const response = await axios.get("http://localhost:5000/api/noti-alerts?limit=4");
         const data = response.data;
         const mappedAlerts = data.alerts.map((alert) => {
-          let createdDate;
-          if (alert.createdAt && alert.createdAt.toDate) {
-            // Firestore Timestamp
-            createdDate = alert.createdAt.toDate();
-          } else if (alert.createdAt && typeof alert.createdAt === "string") {
-            // String ISO
-            createdDate = new Date(alert.createdAt);
-          } else if (alert.createdAt && alert.createdAt.seconds) {
-            // Timestamp object
-            createdDate = new Date(alert.createdAt.seconds * 1000);
-          } else {
-            // Fallback
-            createdDate = new Date();
-          }
+          const createdDate = getTime(alert);
           return {
             title: alert.shortTitle || alert.title,
             desc: alert.message,
-            time: getTimeAgo(createdDate)
+            time: getTimeAgo(createdDate),
+            isRead: alert.isRead
           };
         });
         setAlerts(mappedAlerts);
@@ -42,21 +34,25 @@ const AlertsWidget = () => {
     fetchAlerts();
   }, []);
 
-  const getTimeAgo = (date) => {
-    const now = new Date();
-    const diffInMs = now - date;
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  useEffect(() => {
+    const handler = (data) => {
+      setAlerts((prev) => {
+        const finalData = {
+          title: data.shortTitle || data.title,
+          desc: data.message,
+          isRead: data.isRead,
+          time: getTimeAgo(createdDate)
+        };
 
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes}m`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h`;
-    } else {
-      return `${diffInDays}d`;
-    }
-  };
+        return [finalData, ...prev];
+      });
+    };
+    socket.on("chicken_alert", handler);
+
+    return () => {
+      socket.off("chicken_alert", handler);
+    };
+  }, []);
 
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
@@ -70,8 +66,8 @@ const AlertsWidget = () => {
         {alerts.map((item, index) => (
           <div
             key={index}
-            className={`p-4 rounded-2xl flex items-center justify-between border cursor-pointer hover:border-slate-300 transition-all ${
-              index === 0 ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-slate-200"
+            className={`p-4 rounded-2xl border cursor-pointer hover:border-slate-300 transition-all ${
+              !item.isRead ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-slate-200"
             }`}
           >
             <div className="flex items-center gap-4">
