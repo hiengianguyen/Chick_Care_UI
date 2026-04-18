@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import chickLogo from "../public/img/chick.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { io } from "socket.io-client";
+import getTime from "../utils/getTime";
+import getTimeAgo from "../utils/getTimeAgo";
+const socket = io("http://localhost:5000");
 
 const Header = ({ currentTime }) => {
   const navigation = useNavigate();
@@ -15,17 +19,9 @@ const Header = ({ currentTime }) => {
       try {
         const response = await axios.get("http://localhost:5000/api/noti-alerts?limit=5");
         const data = response.data;
+
         const mappedNotifications = data.alerts.map((alert) => {
-          let createdDate;
-          if (alert.createdAt && alert.createdAt.toDate) {
-            createdDate = alert.createdAt.toDate();
-          } else if (alert.createdAt && typeof alert.createdAt === "string") {
-            createdDate = new Date(alert.createdAt);
-          } else if (alert.createdAt && alert.createdAt.seconds) {
-            createdDate = new Date(alert.createdAt.seconds * 1000);
-          } else {
-            createdDate = new Date();
-          }
+          const createdDate = getTime(alert);
           const now = new Date();
           const diffInMs = now - createdDate;
           const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -35,11 +31,12 @@ const Header = ({ currentTime }) => {
             title: alert.shortTitle || alert.title,
             description: alert.message,
             time: getTimeAgo(createdDate),
+            isRead: alert.isRead,
             isNew
           };
         });
         setHeaderNotifications(mappedNotifications);
-        setNewCount(mappedNotifications.filter((n) => n.isNew).length);
+        setNewCount(data.isReadCount);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -48,30 +45,52 @@ const Header = ({ currentTime }) => {
     fetchNotifications();
   }, []);
 
-  const getTimeAgo = (date) => {
-    const now = new Date();
-    const diffInMs = now - date;
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  useEffect(() => {
+    const handler = (data) => {
+      setNewCount((prev) => prev + 1);
+      setHeaderNotifications((prev) => {
+        const finalData = {
+          id: data.id,
+          title: data.shortTitle || data.title,
+          description: data.message,
+          isRead: data.isRead,
+          isNew: true,
+          time: getTimeAgo(createdDate)
+        };
 
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} phút trước`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours} giờ trước`;
-    } else {
-      return `${diffInDays} ngày trước`;
-    }
-  };
+        return [finalData, ...prev];
+      });
+    };
+    socket.on("chicken_alert", handler);
+
+    return () => {
+      socket.off("chicken_alert", handler);
+    };
+  }, []);
 
   const toggleNotifications = () => {
     setIsNotificationOpen(!isNotificationOpen);
   };
 
   const handleDeleteNotification = (id) => {
-    // For now, just remove from UI (in future, implement soft delete via API)
     const updated = headerNotifications.filter((n) => n.id !== id);
     setHeaderNotifications(updated);
+  };
+
+  const handleReadedNoti = async (id) => {
+    await axios.post("http://localhost:5000/api/noti/read/" + id).then((dataAxios) => {
+      const dataNew = headerNotifications.map((noti) => {
+        if (noti.id === dataAxios.data.id) {
+          return {
+            ...noti,
+            isRead: true
+          };
+        } else return noti;
+      });
+
+      setHeaderNotifications(dataNew);
+      setNewCount((prev) => prev - 1);
+    });
   };
 
   return (
@@ -103,7 +122,11 @@ const Header = ({ currentTime }) => {
             className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 relative group transition-all"
           >
             <Bell size={20} className="text-slate-600 group-hover:rotate-12 transition-transform" />
-            {newCount > 0 && <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />}
+            {newCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-[#f8fafc] flex items-center justify-center px-1 shadow-sm">
+                {newCount}
+              </span>
+            )}
           </button>
           {isNotificationOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-slate-200 z-50">
@@ -121,9 +144,15 @@ const Header = ({ currentTime }) => {
                         <div className="flex items-center gap-2 mb-1">
                           <p className="text-sm text-slate-700 font-medium">{note.title}</p>
                           {note.isNew && <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 text-xs font-bold rounded">Mới</span>}
+                          {note.isRead === false && <span className="w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />}
                         </div>
                         <p className="text-xs text-slate-500 mt-1">{note.description}</p>
                         <p className="text-xs text-slate-400 mt-1">{note.time}</p>
+                        {note.isRead === false && (
+                          <button onClick={() => handleReadedNoti(note.id)} className="mt-2 text-blue-600 hover:text-blue-800">
+                            Đánh dấu đã đọc
+                          </button>
+                        )}
                       </div>
                       <button
                         onClick={() => handleDeleteNotification(note.id)}
