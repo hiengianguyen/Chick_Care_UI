@@ -15,7 +15,8 @@ import {
   Power,
   MoveLeft,
   ChevronRight,
-  Cog
+  Cog,
+  Sparkles
 } from "lucide-react";
 import { data, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -57,6 +58,11 @@ const Features = () => {
     selectedDays: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
     isEditTime: false,
     mode: "Tự động"
+  });
+
+  // 3. Cho ăn (Feeder)
+  const [lightDecorConfig, setLightDecorConfig] = useState({
+    active: false
   });
 
   useEffect(() => {
@@ -109,12 +115,19 @@ const Features = () => {
     });
   };
 
-  const handleData = () => {
-    const dataList = {
-      fan: fanConfig,
-      light: lightConfig,
-      feed: feederConfig
-    };
+  const handleData = (lightMode, dataLight) => {
+    let dataList;
+    if (lightMode) {
+      dataList = {
+        lightDecor: dataLight
+      };
+    } else {
+      dataList = {
+        fan: fanConfig,
+        light: lightConfig,
+        feed: feederConfig
+      };
+    }
 
     const sendData = async () => {
       await axios.post(`${API_BASE}/api/get_data_device`, dataList).finally(() => resetStateIsEditTime());
@@ -145,6 +158,13 @@ const Features = () => {
     const newTimes = [...config.times];
     newTimes[index] = value;
     setConfig({ ...config, times: newTimes, isEditTime: true });
+  };
+
+  const settingLight = () => {
+    setLightDecorConfig({ ...lightDecorConfig, active: !lightDecorConfig.active });
+    handleData(true, {
+      active: !lightDecorConfig.active
+    });
   };
 
   // --- GIAO DIỆN COMPONENT CON ---
@@ -466,10 +486,63 @@ const Features = () => {
               </div>
             </div>
           </div>
+
+          {/* --- KHỐI CHO ĂN (FEEDER) - GIỮ LẠI ĐỂ ĐỒNG BỘ --- */}
+          <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-4 rounded-2xl bg-amber-500 text-white`}>
+                  <Sparkles size={24} />
+                </div>
+                <div>
+                  <h2 className="font-black text-slate-800 uppercase text-sm">Đèn Trang Trí</h2>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Chiếu sáng cho môi trường</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Bật thủ công</span>
+                <button
+                  onClick={settingLight}
+                  className={`w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner ${lightDecorConfig.active ? "bg-amber-500" : "bg-slate-200"}`}
+                >
+                  <div
+                    className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${lightDecorConfig.active ? "right-1" : "left-1"}`}
+                  >
+                    <Power size={12} className={lightDecorConfig.active ? "text-amber-500" : "text-slate-300"} />
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="gap-6 pt-4 border-t border-slate-50">
+              <div className="flex flex-col items-center justify-center py-12">
+                <button
+                  onClick={settingLight}
+                  className={`w-28 h-28 rounded-full flex flex-col items-center justify-center gap-2 transition-all duration-500 border-8 ${
+                    lightDecorConfig.active
+                      ? "bg-white border-amber-50 text-amber-500 shadow-2xl shadow-amber-100 scale-105"
+                      : "bg-slate-50 border-white text-slate-300"
+                  }`}
+                >
+                  <Power size={40} strokeWidth={2.5} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">
+                    {lightDecorConfig.active ? "Tắt ngay" : "Bật ngay"}
+                  </span>
+                </button>
+
+                <div className="mt-8 text-center">
+                  <p className="text-[11px] font-medium text-slate-400 max-w-[240px] leading-relaxed">
+                    Nhấn để {lightDecorConfig.active ? "ngắt kết nối" : "kích hoạt"} hệ thống đèn LED trang trí khu vực trung tâm.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </main>
         <div className="pt-6 border-t border-slate-100 flex justify-center">
           <button
-            onClick={() => handleData()}
+            onClick={() => handleData(false)}
             className="group relative flex items-center gap-3 px-12 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-indigo-600 hover:shadow-2xl hover:shadow-indigo-200 transition-all duration-300 active:scale-95"
           >
             <div className="p-2 bg-white/10 rounded-xl group-hover:rotate-90 transition-transform duration-500">
