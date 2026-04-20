@@ -39,16 +39,6 @@ function CardRedirectFeatures() {
             Quản lý tập trung Hệ thống Quạt, Đèn sưởi và Cho ăn. Tùy chỉnh lịch trình, công suất và ngưỡng cảm biến tự động chỉ với một lần
             nhấn.
           </p>
-          <div className="flex items-center gap-4 pt-2">
-            <div className="flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-              <span className="text-[10px] font-black text-emerald-700 uppercase">3 Thiết bị đang chạy</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
-              <Activity size={10} className="text-amber-600" />
-              <span className="text-[10px] font-black text-amber-700 uppercase">Tự động: ON</span>
-            </div>
-          </div>
         </div>
 
         {/* Right: CTA */}
