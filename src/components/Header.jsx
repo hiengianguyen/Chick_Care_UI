@@ -175,9 +175,6 @@ const Header = ({ currentTime }) => {
             </div>
           )}
         </div>
-        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-200 cursor-pointer overflow-hidden">
-          <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff" alt="User" />
-        </div>
       </div>
     </header>
   );

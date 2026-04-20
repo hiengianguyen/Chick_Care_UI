@@ -38,11 +38,11 @@ const Home = () => {
       title: "Thiết kế hệ thống & Lập trình AI",
       desc: "Xây dựng kiến trúc phần cứng và huấn luyện mô hình trí tuệ nhân tạo.",
       fullDesc:
-        "Đây là giai đoạn cốt lõi về kỹ thuật. Hệ thống được chia làm 2 phần chính: Phần cứng sử dụng Arduino Mega kết hợp cảm biến DHT22, Relay; Phần mềm sử dụng Python và thư viện TensorFlow/YOLO để nhận diện mật độ gà. Trợ lý giọng nói được xây dựng trên nền tảng xử lý ngôn ngữ tự nhiên (NLP).",
+        "Đây là giai đoạn cốt lõi về kỹ thuật. Hệ thống được chia làm 2 phần chính: Phần cứng sử dụng ESP32 kết hợp cảm biến DHT11, Relay; Phần mềm sử dụng Python và thư viện YOLOv8 để nhận diện gà con.",
       details: [
         "Thiết kế mạch điều khiển trung tâm tối ưu hóa điện năng",
         "Huấn luyện Model AI với bộ dữ liệu hơn 2000 hình ảnh thực tế",
-        "Lập trình thuật toán Fuzzy Logic điều khiển thiết bị ngoại vi"
+        "Lập trình thuật toán phân tích hành vi"
       ],
       image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800",
       icon: <Code className="text-emerald-500" />
@@ -51,9 +51,9 @@ const Home = () => {
       title: "Lắp đặt, Thử nghiệm & Hiệu chỉnh",
       desc: "Triển khai thực tế tại trang trại để tinh chỉnh các thông số vận hành.",
       fullDesc:
-        "Hệ thống được đưa vào vận hành thử nghiệm tại một chuồng úm diện tích 20m2. Tại đây, chúng tôi kiểm tra độ bền của linh kiện trong môi trường bụi bẩn và độ ẩm cao. Các thuật toán AI được tinh chỉnh để loại bỏ nhiễu ánh sáng, đảm bảo việc nhận diện gà luôn chính xác trong mọi điều kiện.",
+        "Hệ thống được đưa vào vận hành thử nghiệm tại một chuồng úm diện tích 40x60cm. Tại đây, chúng tôi kiểm tra độ bền của linh kiện trong môi trường bụi bẩn và độ ẩm cao. Các thuật toán AI được tinh chỉnh để loại bỏ nhiễu ánh sáng, đảm bảo việc nhận diện gà luôn chính xác trong mọi điều kiện.",
       details: [
-        "Thử nghiệm vận hành liên tục 24/7 trong vòng 14 ngày",
+        "Thử nghiệm vận hành liên tục 24/7 trong thời gian dài",
         "Đo lường và hiệu chuẩn sai số cảm biến xuống dưới 0.5°C",
         "Tối ưu hóa khả năng nhận diện giọng nói trong môi trường ồn ào"
       ],
@@ -64,9 +64,9 @@ const Home = () => {
       title: "Hoàn thiện, Đóng gói & Chuyển giao",
       desc: "Tối ưu hóa trải nghiệm người dùng và đóng gói sản phẩm thương mại.",
       fullDesc:
-        "Giai đoạn cuối cùng là tối ưu hóa trải nghiệm người dùng. Giao diện được thiết kế trực quan, tối giản hóa để người nông dân lớn tuổi cũng có thể sử dụng dễ dàng. Hệ thống Voice AI được nạp thêm các biến thể giọng nói địa phương để tăng tính thân thiện và chính xác.",
+        "Giai đoạn cuối cùng là tối ưu hóa trải nghiệm người dùng. Giao diện được thiết kế trực quan, tối giản hóa để người nông dân lớn tuổi cũng có thể sử dụng dễ dàng. Hệ thống Voice control được nạp tăng tính thân thiện và điều khiển chính xác.",
       details: [
-        "Đóng gói vỏ hộp đạt tiêu chuẩn bảo vệ IP65 chống bụi và ẩm",
+        "Đóng gói vỏ hộp chống bụi và ẩm",
         "Xây dựng bộ tài liệu hướng dẫn sử dụng bằng hình ảnh trực quan",
         "Tổ chức chuyển giao kỹ thuật và hướng dẫn vận hành cho bà con"
       ],
@@ -114,15 +114,16 @@ const Home = () => {
       <section id="intro" className="pt-40 pb-24 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold mb-8 border border-emerald-100">
-            DỰ ÁN KHOA HỌC KỸ THUẬT CẤP THÀNH PHỐ 2026
+            HỘI THI TIN HỌC TRẺ CẤP THÀNH PHỐ LẦN THỨ 29, NĂM 2026
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 mb-8 leading-[1.1]">
             Chăn Nuôi Gà Con <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 uppercase">Kỷ Nguyên AI</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 uppercase">
+              Kỷ Nguyên Công Nghệ Số
+            </span>
           </h1>
           <p className="text-xl text-slate-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Hệ thống IoT kết hợp AI Camera và Trợ lý ảo giọng nói giúp tự động hóa quy trình chăm sóc, đảm bảo năng suất tối ưu cho người
-            nông dân.
+            Hệ thống thông minh ứng dụng AI trong giám sát hành vi và IOT điều khiển môi trường chăn nuôi gà con
           </p>
         </div>
       </section>
@@ -312,7 +313,7 @@ const Home = () => {
             <div className="bg-emerald-600 p-2 rounded-xl text-white">
               <Brain size={20} />
             </div>
-            <span className="font-bold text-slate-800 uppercase tracking-tight">Smart Chicken AI 2024</span>
+            <span className="font-bold text-slate-800 uppercase tracking-tight">ChickCare AI 2026</span>
           </div>
           <div className="flex gap-8">
             <a href="#" className="hover:text-emerald-600 transition">

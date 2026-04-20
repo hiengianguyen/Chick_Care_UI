@@ -4,17 +4,16 @@ import { Activity, Users, EyeOff, Maximize } from "lucide-react";
 import { GlobalContext } from "./GlobalContext";
 
 const stats = [
-  { title: "Tổng số gà", value: "0", unit: "con", icon: Users, color: "bg-blue-500", trend: 12 },
+  { title: "Tổng số gà", value: "0", unit: "con", icon: Users, color: "bg-blue-500" },
   {
     title: "Mật độ cao nhất",
     value: "0",
     unit: "%",
     icon: Maximize,
-    color: "bg-indigo-600",
-    subValue: "Tại Khu A (Trung tâm)"
+    color: "bg-indigo-600"
   },
-  { title: "Đứng yên lâu", value: "0", unit: "con", icon: Activity, color: "bg-amber-500", trend: -5 },
-  { title: "Tách đàn lẻ", value: "0", unit: "con", icon: EyeOff, color: "bg-purple-500", trend: 0 }
+  { title: "Đứng yên lâu", value: "0", unit: "con", icon: Activity, color: "bg-amber-500" },
+  { title: "Tách đàn lẻ", value: "0", unit: "con", icon: EyeOff, color: "bg-purple-500" }
 ];
 
 const ListStatCard = () => {

@@ -12,7 +12,7 @@ const VoiceAssistantCompact = () => {
   const [reply, setReply] = useState("");
   const recognitionRef = useRef(null);
 
-  const examples = ["Bật quạt thông gió", "Kiểm tra nhiệt độ", "Cho gà ăn ngay"];
+  const examples = ["Bật/tắt quạt", "Bật/tắt đèn", "Cho ăn", "Dừng cho ăn", "Thông tin"];
 
   // 🎤 setup speech recognition
   useEffect(() => {
